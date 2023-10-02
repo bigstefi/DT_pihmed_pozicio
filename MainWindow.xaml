@@ -5,9 +5,19 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:DT_pihmed_pozicio"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="Position in spent-fuel-pool" Height="450" Width="800">
     <Grid>
-        <Label x:Name="Label1" Content="Label" HorizontalAlignment="Left" Margin="35,30,0,0" VerticalAlignment="Top"/>
-        <Label x:Name="Label2" Content="Label" HorizontalAlignment="Left" Margin="98,30,0,0" VerticalAlignment="Top"/>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="0.25*"/>
+            <ColumnDefinition>
+
+            </ColumnDefinition>
+        </Grid.ColumnDefinitions>
+        <StackPanel Background="Beige">
+            <RadioButton x:Name="rb_real_time" Content="Real time measurement"/>
+            <RadioButton x:Name="rb_map" Content="Pool map"/>
+            <RadioButton x:Name="rb_navigation" Content="Navigation"/>
+        </StackPanel>
+        <Canvas x:Name="canvas_real_time" Grid.Column="1" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Height="399" Width="614"/>
     </Grid>
 </Window>
