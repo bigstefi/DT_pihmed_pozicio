@@ -20,105 +20,141 @@ namespace DT_pihmed_pozicio
 
     public partial class MainWindow : Window
     {
-        public List<double> angle = new List<double>();
-        public List<double> distance = new List<double>();
-        public List<double> x_relative = new List<double>();
-        public List<double> y_relative = new List<double>();
-        public List<Point> points_real_time = new List<Point>();
+        #region Member variables
+        public List<double> _angles = new List<double>();
+        public List<double> _distances = new List<double>();
+        public List<double> _relativeXs = new List<double>();
+        public List<double> _relativeYs = new List<double>();
+        public List<Point> _pointsRealTime = new List<Point>();
         public List<Path> _lines = new List<Path>();
+        #endregion
 
+        #region Constructor
         public MainWindow()
         {
             InitializeComponent();
 
-            read_data_from_file();
-            calibration();
-            
-        }
+            this.SizeChanged += OnSizeChanged;
 
-        public void read_data_from_file()
+            ReadData();
+            ConvertCircleGeometryToCoordinateGeometry();
+            ConvertCoordinateGeometryToCanvasGeometry();
+        }
+        #endregion
+
+        #region UI event handlers
+        private void OnSizeChanged(object sender, SizeChangedEventArgs args)
+        {
+            _canvasRealTime.Width = args.NewSize.Width;
+            _canvasRealTime.Height = args.NewSize.Height;
+
+            ConvertCoordinateGeometryToCanvasGeometry();
+        }
+        #endregion
+
+        #region Test data helpers
+        private void ReadData()
         {
             // Configure open file dialog box
-            OpenFileDialog OFD = new OpenFileDialog();
-            OFD.Filter = "csv files (*.csv)|*.csv|All files (*.*)|*.*";
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            openFileDialog.Filter = "csv files (*.csv)|*.csv|All files (*.*)|*.*";
 
             // Csv reading
-            if (OFD.ShowDialog() == true)
+            if (openFileDialog.ShowDialog() == true)
             {
-                string filepath = OFD.FileName;
-                System.IO.StreamReader sr = new System.IO.StreamReader(filepath);
-                angle.Clear();
-                distance.Clear();
-                while (!sr.EndOfStream)
-                {
-                    var line = sr.ReadLine();
-                    var values = line.Split(',');
-                    angle.Add(Convert.ToDouble(values[0]));
-                    distance.Add(Convert.ToDouble(values[1]));
-                }
+                string filePath = openFileDialog.FileName;
+
+                ReadData(filePath);
             }
         }
 
-        public void calibration()
+        private void ReadData(string filePath) // testable this way, no need for OpenFileDialog, you can directly pass the file full path and see if parsing works correctly
+        {
+            using (System.IO.StreamReader sr = new System.IO.StreamReader(filePath))
+            {
+                _angles.Clear();
+                _distances.Clear();
+
+                while (!sr.EndOfStream)
+                {
+                    string line = sr.ReadLine();
+                    string[] values = line.Split(',');
+
+                    _angles.Add(Convert.ToDouble(values[0]));
+                    _distances.Add(Convert.ToDouble(values[1]));
+                }
+            }
+        }
+        #endregion
+
+        #region Domain logic
+        private void ConvertCircleGeometryToCoordinateGeometry() // ToDo: would be enough if taking care only of the Xs and Ys, canvas data should not be here
         {
             // Clear lists
-            x_relative.Clear();
-            y_relative.Clear();
-            points_real_time.Clear();
-            canvas_real_time.Children.Clear();
+            _relativeXs.Clear();
+            _relativeYs.Clear();
 
             // Transform to xy coordinates
             double x_rel;
             double y_rel;
-            for (int i = 0; i < angle.Count(); i++)
+            for (int i = 0; i < _angles.Count(); i++)
             {
-                x_rel = distance[i] * Math.Cos(rad(angle[i]));
-                x_relative.Add(x_rel);
-                y_rel = distance[i] * Math.Sin(rad(angle[i]));
-                y_relative.Add(y_rel);
+                x_rel = _distances[i] * Math.Cos(ToRadian(_angles[i]));
+                _relativeXs.Add(x_rel);
+                y_rel = _distances[i] * Math.Sin(ToRadian(_angles[i]));
+                _relativeYs.Add(y_rel);
             }
-            calibration_drawing();
         }
+        #endregion
 
-        private void calibration_drawing()
+        private void ConvertCoordinateGeometryToCanvasGeometry()
         {
-            // Display - zoom
-            double x_max = Math.Max(x_relative.Max(), Math.Abs(x_relative.Min()));
-            double y_max = Math.Max(y_relative.Max(), Math.Abs(y_relative.Min()));
-            double zoom = Math.Max(x_max / (canvas_real_time.Width - 20) * 2, y_max / (canvas_real_time.Height - 20) * 2);
+            _pointsRealTime.Clear();
+            _lines.Clear();
+            //_canvasRealTime.Children.Clear();
 
+            // Display - zoom
+            double xMax = Math.Max(_relativeXs.Max(), Math.Abs(_relativeXs.Min()));
+            double yMax = Math.Max(_relativeYs.Max(), Math.Abs(_relativeYs.Min()));
+            double zoom = Math.Max(xMax / (_canvasRealTime.Width - 20) * 2, yMax / (_canvasRealTime.Height - 20) * 2); // ToDo: I would not work here with margins, that is defined in the xaml
+            // ToDo: decreasing width and height ends up in a multiplier which makes the image larger than the canvas itself (just think of having a pool of the canvas size)
+            //       I would simply adjust the larger direction to the canvas size of that direction
 
             // Display - transform of coordinates
-
             double xc;
             double yc;
-            Point _point = new Point();
+            Point point = new Point();
 
-            for (int i = 0; i < x_relative.Count(); i++)
+            for (int i = 0; i < _relativeXs.Count(); i++)
             {
-                xc = x_relative[i] / zoom + canvas_real_time.Width / 2;
-                yc = canvas_real_time.Height / 2 - y_relative[i] / zoom;
-                _point.X = xc;
-                _point.Y = yc;
-                points_real_time.Add(_point);
+                // ToDo: 0 of canvas should be xMin --> calculation should be done by a shift to 0 (by xMin) and then multiplied by the zoom factor,
+                //       which should end up in canvas dimensions, so zoom above should be calculated by canvas dimensions/coordinate dimensions.
+                //       Same vertically
+                xc = _relativeXs[i] / zoom + _canvasRealTime.Width / 2; 
+                yc = _canvasRealTime.Height / 2 - _relativeYs[i] / zoom;
+                point.X = xc;
+                point.Y = yc;
+                _pointsRealTime.Add(point);
             }
 
             // Display on canvas
-            for (int i = 0; i < points_real_time.Count(); i++)
+            for (int i = 0; i < _pointsRealTime.Count(); i++)
             {
-                DrawPoint(points_real_time[i]);
+                DrawPoint(_pointsRealTime[i]);
             }
+
             UpdateCanvasElements();
         }
 
-        public double rad(double degree)
+        public double ToRadian(double degree)
         {
             // Transform angles from degrees to radian
             double radian = degree * Math.PI / 180;
             return radian;
         }
 
-        private void DrawLine(Point start, Point end, Color lineColor)
+        // ToDo: you will not change the color for every point, so a member variable would make it (no need for Color.FromRgb calculation all the time)
+        private void DrawLine(Point start, Point end, Color lineColor) 
         {
             var lineGeom = new LineGeometry { StartPoint = start, EndPoint = end };
 
@@ -132,7 +168,7 @@ namespace DT_pihmed_pozicio
             _lines.Add(linePath);
         }
 
-        private void DrawPoint(Point p)
+        private void DrawPoint(Point p) // ToDo: you are cheating with the method name, because actually you are drawing a +
         {
             double dxy = 2;
             Point p1 = new Point();
@@ -155,12 +191,12 @@ namespace DT_pihmed_pozicio
 
         private void UpdateCanvasElements()
         {
-            canvas_real_time.Children.Clear();
+            _canvasRealTime.Children.Clear();
+
             foreach (Path line in _lines)
             {
-                canvas_real_time.Children.Add(line);
+                _canvasRealTime.Children.Add(line);
             }
         }
-
     }
 }

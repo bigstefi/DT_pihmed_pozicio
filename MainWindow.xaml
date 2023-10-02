@@ -18,6 +18,6 @@
             <RadioButton x:Name="rb_map" Content="Pool map"/>
             <RadioButton x:Name="rb_navigation" Content="Navigation"/>
         </StackPanel>
-        <Canvas x:Name="canvas_real_time" Grid.Column="1" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Height="399" Width="614"/>
+        <Canvas x:Name="_canvasRealTime" Grid.Column="1" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Height="399" Width="614" />
     </Grid>
 </Window>
