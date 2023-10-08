@@ -66,6 +66,8 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Data\CanvasCoordinates.cs" />
+    <Compile Include="Data\CanvasGeometry.cs" />
     <Compile Include="Data\CartesianCoordinate.cs" />
     <Compile Include="Data\CartesianCoordinates.cs" />
     <Compile Include="Data\PolarCoordinate.cs" />
@@ -97,6 +99,12 @@
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <None Include="TestData\data.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="TestData\Simple.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
   <ItemGroup>

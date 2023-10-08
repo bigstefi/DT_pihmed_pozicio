@@ -12,6 +12,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using DT_pihmed_pozicio.Data;
 using Microsoft.Win32;
 
 
@@ -27,6 +28,10 @@ namespace DT_pihmed_pozicio
         public List<double> _relativeYs = new List<double>();
         public List<Point> _pointsRealTime = new List<Point>();
         public List<Path> _lines = new List<Path>();
+        private CanvasCoordinates _canvasCoordinates = null;
+        private CartesianCoordinates _cartesianCoordinates = null;
+        private string _filePath = string.Empty;
+        CanvasGeometry _canvasGeometry = null;
         #endregion
 
         #region Constructor
@@ -36,9 +41,14 @@ namespace DT_pihmed_pozicio
 
             this.SizeChanged += OnSizeChanged;
 
-            ReadData();
-            ConvertCircleGeometryToCoordinateGeometry();
-            ConvertCoordinateGeometryToCanvasGeometry();
+            _filePath = ReadData();
+            //ConvertCircleGeometryToCoordinateGeometry();
+            //ConvertCoordinateGeometryToCanvasGeometry();
+
+            _cartesianCoordinates = new CartesianCoordinates(_filePath);
+            _canvasCoordinates = new CanvasCoordinates(_cartesianCoordinates, _canvasRealTime.Width, _canvasRealTime.Height);
+            _canvasGeometry = new CanvasGeometry(_canvasCoordinates.Data);
+            UpdateCanvasElements(_canvasGeometry.Data);
         }
         #endregion
 
@@ -48,24 +58,31 @@ namespace DT_pihmed_pozicio
             _canvasRealTime.Width = args.NewSize.Width;
             _canvasRealTime.Height = args.NewSize.Height;
 
-            ConvertCoordinateGeometryToCanvasGeometry();
+            //ConvertCoordinateGeometryToCanvasGeometry();
+            _canvasCoordinates = new CanvasCoordinates(_cartesianCoordinates, _canvasRealTime.Width, _canvasRealTime.Height);
+            _canvasGeometry = new CanvasGeometry(_canvasCoordinates.Data);
+            UpdateCanvasElements(_canvasGeometry.Data);
         }
         #endregion
 
         #region Test data helpers
-        private void ReadData()
+        private string ReadData()
         {
             // Configure open file dialog box
             OpenFileDialog openFileDialog = new OpenFileDialog();
+            string filePath = System.IO.Path.Combine(Environment.CurrentDirectory, "TestData");
+            openFileDialog.InitialDirectory = filePath;
             openFileDialog.Filter = "csv files (*.csv)|*.csv|All files (*.*)|*.*";
 
             // Csv reading
             if (openFileDialog.ShowDialog() == true)
             {
-                string filePath = openFileDialog.FileName;
+                filePath = openFileDialog.FileName;
 
                 ReadData(filePath);
             }
+
+            return filePath;
         }
 
         private void ReadData(string filePath) // testable this way, no need for OpenFileDialog, you can directly pass the file full path and see if parsing works correctly
@@ -194,6 +211,16 @@ namespace DT_pihmed_pozicio
             _canvasRealTime.Children.Clear();
 
             foreach (Path line in _lines)
+            {
+                _canvasRealTime.Children.Add(line);
+            }
+        }
+
+        private void UpdateCanvasElements(IEnumerable<Path> lines)
+        {
+            _canvasRealTime.Children.Clear();
+
+            foreach (Path line in lines)
             {
                 _canvasRealTime.Children.Add(line);
             }
