@@ -8,19 +8,18 @@ namespace DT_pihmed_pozicio.Data
 {
     internal class PolarCoordinates
     {
+        #region Member variables
         private List<PolarCoordinate> _polarCoordinates = new List<PolarCoordinate>();
+        #endregion
 
-        public IReadOnlyCollection<PolarCoordinate> Data { get { return _polarCoordinates; } }   
+        #region Properties
+        public IReadOnlyCollection<PolarCoordinate> Data { get { return _polarCoordinates; } }
+        #endregion
 
-        public PolarCoordinates(string rawDataFilePath)
-            : this(new RawData(rawDataFilePath))
+        #region Constructor
+        public PolarCoordinates(RawData rawData)
         {
-
-        }
-
-        public PolarCoordinates(RawData rawData) 
-        {
-            foreach(string line in rawData.Data)
+            foreach (string line in rawData.Data)
             {
                 string[] values = line.Split(',');
 
@@ -30,6 +29,14 @@ namespace DT_pihmed_pozicio.Data
             }
         }
 
+        public PolarCoordinates(string rawDataFilePath)
+            : this(new RawData(rawDataFilePath))
+        {
+
+        }
+        #endregion
+
+        #region APIs
         public static double ToRadian(double degree)
         {
             // Transform angles from degrees to radian
@@ -37,5 +44,6 @@ namespace DT_pihmed_pozicio.Data
             
             return radian;
         }
+        #endregion
     }
 }

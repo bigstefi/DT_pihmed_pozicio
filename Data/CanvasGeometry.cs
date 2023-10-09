@@ -12,12 +12,17 @@ namespace DT_pihmed_pozicio.Data
 {
     internal class CanvasGeometry
     {
+        #region Member variables
         private List<Path> _lines = new List<Path>();
         private Color _lineColor = Color.FromRgb(0, 0, 0);
         private Brush _brush = null;
+        #endregion
 
+        #region Properties
         public IEnumerable<Path> Data { get { return _lines; } }
+        #endregion
 
+        #region Constructor
         public CanvasGeometry(IEnumerable<Point> points)
         {
             _lineColor = Color.FromRgb(0, 0, 0);
@@ -28,7 +33,9 @@ namespace DT_pihmed_pozicio.Data
                 CreatePointGeometry(p);
             }
         }
+        #endregion
 
+        #region Helpers
         private void CreatePointGeometry(Point p) // ToDo: you are cheating with the method name, because actually you are drawing a +
         {
             double dxy = 2;
@@ -50,26 +57,26 @@ namespace DT_pihmed_pozicio.Data
             CreateLineGeometry(p3, p4);
         }
 
-        [Obsolete("Use the one with 2 parameters")]
-        private void CreateLineGeometry(Point start, Point end, Color lineColor)
-        {
-            var lineGeom = new LineGeometry { StartPoint = start, EndPoint = end };
+        //[Obsolete("Use the one with 2 parameters")]
+        //private void CreateLineGeometry(Point start, Point end, Color lineColor)
+        //{
+        //    var lineGeom = new LineGeometry { StartPoint = start, EndPoint = end };
 
-            Path linePath = new Path
-            {
-                Stroke = new SolidColorBrush(lineColor),
-                StrokeThickness = 1,
-                Data = lineGeom
-            };
+        //    Path linePath = new Path
+        //    {
+        //        Stroke = new SolidColorBrush(lineColor),
+        //        StrokeThickness = 1,
+        //        Data = lineGeom
+        //    };
 
-            _lines.Add(linePath);
-        }
+        //    _lines.Add(linePath);
+        //}
 
         private void CreateLineGeometry(Point start, Point end)
         {
             var lineGeom = new LineGeometry { StartPoint = start, EndPoint = end };
 
-            Path linePath = new Path
+            Path linePath = new Path()
             {
                 Stroke = _brush,
                 StrokeThickness = 1,
@@ -78,5 +85,6 @@ namespace DT_pihmed_pozicio.Data
 
             _lines.Add(linePath);
         }
+        #endregion
     }
 }

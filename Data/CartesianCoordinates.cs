@@ -8,31 +8,39 @@ namespace DT_pihmed_pozicio.Data
 {
     internal class CartesianCoordinates
     {
+        #region Member variables
         private List<CartesianCoordinate> _cartesianCoordinates = new List<CartesianCoordinate>();
+        #endregion
 
+        #region Properties
         public IReadOnlyCollection<CartesianCoordinate> Data { get { return _cartesianCoordinates; } }
+        #endregion
+
+        #region Constructor
+        public CartesianCoordinates(PolarCoordinates polarCoordinates)
+        {
+            foreach (PolarCoordinate data in polarCoordinates.Data)
+            {
+                _cartesianCoordinates.Add(ToCartesian(data));
+            }
+        }
 
         public CartesianCoordinates(string rawDataFilePath)
             : this(new PolarCoordinates(rawDataFilePath))
         {
 
         }
+        #endregion
 
-        public CartesianCoordinates(PolarCoordinates polarCoordinates)
-        {
-            foreach (PolarCoordinate data in polarCoordinates.Data)
-            {
-                _cartesianCoordinates.Add(ConvertCircleGeometryToCoordinateGeometry(data));
-            }
-        }
-
-        private CartesianCoordinate ConvertCircleGeometryToCoordinateGeometry(PolarCoordinate polarCoordinate) // ToDo: would be enough if taking care only of the Xs and Ys, canvas data should not be here
+        #region APIs
+        public static CartesianCoordinate ToCartesian(PolarCoordinate polarCoordinate)
         {
             // Transform to xy coordinates
-            double x_rel = polarCoordinate.Distance * Math.Cos(PolarCoordinates.ToRadian(polarCoordinate.Angle));
-            double y_rel = polarCoordinate.Distance * Math.Sin(PolarCoordinates.ToRadian(polarCoordinate.Angle));
+            double x = polarCoordinate.Distance * Math.Cos(PolarCoordinates.ToRadian(polarCoordinate.Angle));
+            double y = polarCoordinate.Distance * Math.Sin(PolarCoordinates.ToRadian(polarCoordinate.Angle));
 
-            return new CartesianCoordinate(x_rel, y_rel);
+            return new CartesianCoordinate(x, y);
         }
+        #endregion
     }
 }
